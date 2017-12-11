@@ -1,11 +1,13 @@
 package com.alex;
 
-import java.util.Dictionary;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
 public class Mima {
-    private Dictionary<String, Integer> memory = new Dictionary<String, int>();
+    private Map<String, Integer> memory = new HashMap<String, Integer>();
     private int accu;
+    private StringBuilder output = new StringBuilder();
 
     public String getAccu() {
         int a = accu;
@@ -29,24 +31,28 @@ public class Mima {
         return output;
     }
 
-    private void checkArgumentForNumber(String arg, int line, Integer number) throws Exception {
+    private int getArgumentNumber(String arg, int line) throws Exception {
+        int number;
         try {
-            Integer.parseInt(arg))
+            number = Integer.parseInt(arg);
         }catch (Exception ex)
         {
             throw new Exception("Value at line " + " has to be a number.");
         }
         if (number > 0xFFFFFF)
             throw new Exception("Loaded value at line " + line + " is bigger than the max allowed value (0xFFFFF).");
+        
+        return number;
     }
 
-    private void checkAddress(String address, int line) {
+    private void checkAddress(String address, int line) throws Exception {
         line += 1;
-        if (!memory.Keys.Contains < String > (address))
+        if (!memory.containsKey(address))
             throw new Exception("The value in memory at address " + address + " wasn't initialized (Line " + line + ")");
     }
 
     public void execute(List<Instruction> instructions) throws Exception {
+        output.setLength(0);
         for (int line = 0; line < instructions.size(); line++) {
             Instruction instruction = instructions.get(line);
             int currentLine = line + 1;
@@ -56,7 +62,7 @@ public class Mima {
                 case "HALT":
                     return;
                 case "LDC":
-                    checkArgumentForNumber(instruction.Argument, line, number);
+                    number = getArgumentNumber(instruction.Argument, line);
                     accu = number;
                     accu &= 0xFFFFF;
                     break;
@@ -66,15 +72,15 @@ public class Mima {
                     break;
                 case "STV":
                     //checkArgumentForNumber(instruction.Argument, line, out number);
-                    memory[instruction.Argument] = accu;
+                    memory.put(instruction.Argument, accu);
                     break;
                 case "LDV":
                     checkAddress(instruction.Argument, line);
-                    accu = memory[instruction.Argument];
+                    accu = memory.get(instruction.Argument);
                     break;
                 case "ADD":
                     checkAddress(instruction.Argument, line);
-                    accu += memory[instruction.Argument];
+                    accu += memory.get(instruction.Argument);
                     break;
                 case "RAR":
                     if ((accu & 1) == 1) {
@@ -85,49 +91,54 @@ public class Mima {
                     }
                     break;
                 case "JMP":
-                    checkArgumentForNumber(instruction.Argument, line, number);
+                    number = getArgumentNumber(instruction.Argument, line);
                     line = number - 2;
                     break;
                 case "JMN":
-                    checkArgumentForNumber(instruction.Argument, line, number);
+                    number = getArgumentNumber(instruction.Argument, line);
                     if ((accu & 0x800000) != 0)
                         line = number - 2;
                     break;
                 case "AND":
                     checkAddress(instruction.Argument, line);
-                    accu &= memory[instruction.Argument];
+                    accu &= memory.get(instruction.Argument);
                     break;
                 case "OR":
                     checkAddress(instruction.Argument, line);
-                    accu |= memory[instruction.Argument];
+                    accu |= memory.get(instruction.Argument);
                     break;
                 case "XOR":
                     checkAddress(instruction.Argument, line);
-                    accu ^= memory[instruction.Argument];
+                    accu ^= memory.get(instruction.Argument);
                     break;
                 case "EQL":
                     checkAddress(instruction.Argument, line);
-                    if (accu == memory[instruction.Argument])
+                    if (accu == memory.get(instruction.Argument))
                         accu = -1;
                     else
                         accu = 0;
                     break;
                 case "STIV":
                     checkAddress(instruction.Argument, line);
-                    memory[memory[instruction.Argument].toString()] = accu;
+                    memory.put(memory.get(instruction.Argument).toString(), new Integer(accu));
                     break;
                 case "LDIV":
                     checkAddress(instruction.Argument, line);
-                    checkAddress(memory[instruction.Argument].toString(), line);
-                    accu = memory[memory[instruction.Argument].toString()];
+                    checkAddress(memory.get(instruction.Argument).toString(), line);
+                    accu = memory.get(memory.get(instruction.Argument).toString());
                     break;
                 default:
                     throw new Exception("Unknown instruction '" + instruction.InstructionString + "'(Line " + ++line + ").");
             }
 
-            System.out.println("line: " + currentLine + " accu: " + getAccu());
+            output.append("line: " + currentLine + " accu: " + getAccu());
         }
 
         throw new Exception("Unknown code reached!");
+    }
+    
+    @Override
+    public String toString() {
+        return output.toString();
     }
 }
