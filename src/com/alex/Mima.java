@@ -51,7 +51,7 @@ public class Mima {
             Instruction instruction = instructions.get(line);
             int currentLine = line + 1;
 
-            Integer number;
+            Integer number = 0;
             switch (instruction.InstructionString) {
                 case "HALT":
                     return;
@@ -85,11 +85,11 @@ public class Mima {
                     }
                     break;
                 case "JMP":
-                    checkArgumentForNumber(instruction.Argument, line, out number);
+                    checkArgumentForNumber(instruction.Argument, line, number);
                     line = number - 2;
                     break;
                 case "JMN":
-                    checkArgumentForNumber(instruction.Argument, line, out number);
+                    checkArgumentForNumber(instruction.Argument, line, number);
                     if ((accu & 0x800000) != 0)
                         line = number - 2;
                     break;
@@ -122,10 +122,10 @@ public class Mima {
                     accu = memory[memory[instruction.Argument].toString()];
                     break;
                 default:
-                    throw new NotImplementedException("Unknown instruction '" + instruction.InstructionString + "'(Line " + ++line + ").");
+                    throw new Exception("Unknown instruction '" + instruction.InstructionString + "'(Line " + ++line + ").");
             }
 
-            Console.WriteLine("line: " + currentLine + " accu: " + getAccu());
+            System.out.println("line: " + currentLine + " accu: " + getAccu());
         }
 
         throw new Exception("Unknown code reached!");
