@@ -1,2 +1,4 @@
 LDC 42
+STV Y
+ADD Y
 HALT

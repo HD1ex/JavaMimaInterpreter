@@ -120,7 +120,7 @@ public class Mima {
                     break;
                 case "STIV":
                     checkAddress(instruction.Argument, line);
-                    memory.put(memory.get(instruction.Argument).toString(), new Integer(accu));
+                    memory.put(memory.get(instruction.Argument).toString(), accu);
                     break;
                 case "LDIV":
                     checkAddress(instruction.Argument, line);
@@ -131,7 +131,7 @@ public class Mima {
                     throw new Exception("Unknown instruction '" + instruction.InstructionString + "'(Line " + ++line + ").");
             }
 
-            output.append("line: " + currentLine + " accu: " + getAccu());
+            output.append("line: " + currentLine + " accu: " + getAccu() + "\n");
         }
 
         throw new Exception("Unknown code reached!");
