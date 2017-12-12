@@ -45,6 +45,7 @@ public class Main {
         
         try {
             mima.execute(instructions);
+            System.out.println(mima.getOutput());
             System.out.println(mima);
         }
         catch(Exception ex) {

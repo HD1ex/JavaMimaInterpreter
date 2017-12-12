@@ -1,8 +1,6 @@
 package com.alex;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class Mima {
     private Map<String, Integer> memory = new HashMap<String, Integer>();
@@ -12,9 +10,8 @@ public class Mima {
     public String getAccu() {
         int a = accu;
         if ((accu & 0x800000) > 0) {
-            a = ~a;
-            a += 1;
             a &= 0xFFFFF;
+            a *= -1;
         }
 
         return a + "\t\t" + getBits(accu);
@@ -35,13 +32,12 @@ public class Mima {
         int number;
         try {
             number = Integer.parseInt(arg);
-        }catch (Exception ex)
-        {
+        } catch (Exception ex) {
             throw new Exception("Value at line " + " has to be a number.");
         }
         if (number > 0xFFFFFF)
             throw new Exception("Loaded value at line " + line + " is bigger than the max allowed value (0xFFFFF).");
-        
+
         return number;
     }
 
@@ -64,7 +60,7 @@ public class Mima {
                 case "LDC":
                     number = getArgumentNumber(instruction.Argument, line);
                     accu = number;
-                    accu &= 0xFFFFF;
+                    accu &= 0xFFFFFF;
                     break;
                 case "NOT":
                     accu = ~accu;
@@ -114,7 +110,7 @@ public class Mima {
                 case "EQL":
                     checkAddress(instruction.Argument, line);
                     if (accu == memory.get(instruction.Argument))
-                        accu = -1;
+                        accu = 0x800000;
                     else
                         accu = 0;
                     break;
@@ -131,14 +127,34 @@ public class Mima {
                     throw new Exception("Unknown instruction '" + instruction.InstructionString + "'(Line " + ++line + ").");
             }
 
-            output.append("line: " + currentLine + " accu: " + getAccu() + "\n");
+            output.append(currentLine + " " + instruction + "\taccu: " + getAccu() + "\n");
         }
 
         throw new Exception("Unknown code reached!");
     }
-    
+
+    public String getOutput() {
+        return output.toString();
+    }
+
     @Override
     public String toString() {
-        return output.toString();
+        String[] s = new String[memory.size()];
+
+        int i = 0;
+        for (Map.Entry<String, Integer> entry : memory.entrySet()) {
+            s[i++] = ("Address: " + entry.getKey() + "\tValue: " + entry.getValue() + "\n");
+        }
+
+        Arrays.sort(s);
+
+        StringBuilder out = new StringBuilder();
+        out.append("Memory:\n");
+
+        for (String text : s) {
+            out.append(text);
+        }
+
+        return out.toString();
     }
 }
